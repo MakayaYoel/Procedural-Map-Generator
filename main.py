@@ -1,85 +1,78 @@
-import random
+from colorama import init, Fore
+from generation import noise, cellular_automata, map_utils
 import copy
 
-def generate_noise_map(width: int, height: int, fill_percentage: int) -> list:
-    grid = []
+init(convert=True)
+show_noise_map = False
 
-    for i in range(height):
-        grid.append([])
-        for j in range(width):
-            # Generate wall (1)
-            if random.randint(1, 100) <= fill_percentage:
-                grid[i].append(1)
-            else:
-                # Generate floor (0)
-                grid[i].append(0)
+def select_options():
+    print(Fore.YELLOW + "\nWelcome to a procedural generation example! Let's configure some stuff before we get to the generating." + Fore.RESET)
+
+    answer = input("\nWould you like to see the noise map along side the generated map (Y/N)?\nCHOICE: ").lower()
+
+    while answer not in ["y", "n"]:
+        print(Fore.RED + "\nInvalid option! Please try again." + Fore.RESET)
+        answer = input("Would you like to see the noise map along side the generated map (Y/N)?\nCHOICE: ").lower()
     
-    return grid
+    global show_noise_map
+    show_noise_map = True if answer == "y" else False
 
+    main()
 
+def main():
+    keep_going = True
+    while keep_going:
+        invalid_value = True
+        while invalid_value:
+            try:
+                width = int(input("\nMap Width: "))
+                height = int(input("Map Height: "))
+                fill_percentage = int(input("Noise Map Fill Percentage (whole number): "))
 
-def add_cellular_automata(grid: list, iterations: int):
-    current_iter = 0
+                print(Fore.YELLOW + "\nGENERATING NOISE MAP..." + Fore.RESET)
+                noise_map = noise.generate_noise_map(width, height, fill_percentage)
+                print(Fore.GREEN + "NOISE MAP GENERATED!" + Fore.RESET)
 
-    while current_iter < iterations:
-        temp_grid = copy.deepcopy(grid)
-        y = 0
-        x = 0
+                use_same_map = True
+                while use_same_map:
+                    iterations = int(input("\nHow many times would you like to apply cellular\nautomata to the noise map: "))
+                    cellular_automata_map = cellular_automata.apply_cellular_automata(copy.deepcopy(noise_map), iterations)
 
-        while y < height(grid):
-            while x < width(grid):
-                neighbour_count = get_neighbour_count(x, y, temp_grid)
+                    global show_noise_map
+                    if show_noise_map:
+                        print("\n\nNOISE MAP: ")
+                        map_utils.print_map(noise_map)
 
-                if neighbour_count > 4:
-                    grid[y][x] = 1
+                    print("\n\nCELLULAR AUTOMATA:")
+                    map_utils.print_map(cellular_automata_map)
+
+                    answer = input("Would you like to go again (Y/N)?\nCHOICE: ")
+                    while answer not in ["y", "n"]:
+                        print(Fore.RED + "\nInvalid option! Please try again." + Fore.RESET)
+                        answer = input("Would you like to go again (Y/N)?\nCHOICE: ").lower()
+                    
+                    keep_going = True if answer == "y" else False
+
+                    if keep_going == False:
+                        break
+
+                    answer = input("Would you like to use the same map (Y/N)?\nCHOICE: ").lower()
+                    while answer not in ["y", "n"]:
+                        print(Fore.RED + "\nInvalid option! Please try again." + Fore.RESET)
+                        answer = input("Would you like to use the same map (Y/N)?\nCHOICE: ").lower()
+                    
+                    use_same_map = True if answer == "y" else False
+                
+                # Somewhat hacky, but works!
+                if use_same_map == False:
+                    invalid_value = True
                 else:
-                    grid[y][x] = 0
-
-                x += 1
-            x = 0
-            y += 1
-        
-        current_iter += 1
+                    invalid_value = False
+            except ValueError:
+                invalid_value = True
+                print(Fore.RED + "\nInvalid value submitted! Please try again." + Fore.RESET)
     
-    return grid
+    print(Fore.GREEN + "\nGoodbye!" + Fore.RESET)
 
-def height(grid) :
-    return len(grid)
-
-def width(grid) :
-    return len(grid[0])
-
-def get_neighbour_count(pos_x: int, pos_y:int, grid:list) -> int:
-    count = 0
-
-    for y in range(pos_y - 1, pos_y + 2):
-        for x in range(pos_x - 1, pos_x + 2):
-            if y >= 0 and y < height(grid) and x >= 0 and x < width(grid):
-                if(y != pos_y or x != pos_x):
-                    count += grid[y][x]
-            else:
-                count += 1
-    
-    return count
-
-def print_grid(agrid):
-    for row in agrid:
-        actual_row = ""
-        for i in row:
-            if i == 1:
-                actual_row += "#"
-            else:
-                actual_row += " "
-
-        print(actual_row)
-
-noise_grid = generate_noise_map(100, 25, 60)
-
-while True:
-    iterations = int(input("\nNext Amount of Iterations: "))
-    acopy = copy.deepcopy(noise_grid)
-    automata_grid = add_cellular_automata(acopy, iterations)
-    print("\nNOISE:")
-    print_grid(noise_grid)
-    print("\nAUTOMATA:")
-    print_grid(automata_grid)
+if __name__ == '__main__':
+    select_options()
