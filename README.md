@@ -7,6 +7,9 @@ This is a very simple implementation of map generation using a cellular automato
 ## How can we implement this?
 Before we start, you’ll need a basic understanding of variables, 2d lists, array indexing and loops to understand this tutorial.
 
+<details>
+<summary>1. Generate noise map</summary>
+ 
 First, we generate a noise map, which is just a very not-so-organized map with a bunch of randomized floor and wall tiles. We can accomplish this by having a `generate_noise_map()` function that takes in 3 arguments: `width`, `height` and `fill_percentage`.
 
 Then, we make a list that stores all the noise map’s floor and wall tiles, let’s store this list in a variable called `noise_map`:
@@ -68,18 +71,131 @@ def generate_noise_map(width: int, height: int, fill_percentage: int) -> list:
     # Return the noise map
     return noise_map
 ```
-And, boom! We now have a very ugly-looking noise map!
-![Noise Map](https://i.ibb.co/fQD5Nty/Screenshot-1.png)<br>
-
+And, boom! Now we have a very ugly-looking noise map!<br>
+![Noise Map](https://i.ibb.co/fQD5Nty/Screenshot-1.png)
+</details>
+<details>
+ <summary>2. Use cellular automaton (Counting neighbors)</summary>
+ 
 Let’s clean up this map using a cellular automaton (_A cellular automaton is a method of arranging a grid of values into a more organized grid_).
 
-The cellular automaton we’re going to be using simply counts how many wall tiles are surrounding a specific tile. If the count is bigger than 4, that tile is going to turn into a wall tile, if the count is equal or lower than 4, then that tile will become a floor tile. Here’s a demonstration.<br>
+The cellular automaton we’re going to be using simply counts how many wall tiles are surrounding a specific tile. If the count is bigger than 4, that tile is going to turn into a wall tile, if the count is equal to or lower than 4, then that tile will become a floor tile. Here’s a demonstration.<br>
 ![Empty Grid](https://i.ibb.co/M2KrVjs/empty-grid.jpg)<br>
 This is a grid, the gray square in the middle is the tile we’re currently counting the surrounding wall tiles for. Now let’s give our gray square some neighbors (red is a wall tile, blue is a floor tile):<br>
-![Full Grid](https://i.ibb.co/DWXrZmB/griddd.jpg)<br>
-Based on the rules of this cellular automaton, this tile will turn into a floor tile, because there are 4 wall tiles (4 red squares) surrounding it. Now, let’s code this neighbor counting function, we’ll call this function ``get_neighbor_count()`` and it will accept 3 arguments: `x` and `y` (which represents the tile’s position in our 2d list), and `grid`.
+![Full Grid](https://i.ibb.co/DWXrZmB/griddd.jpg)<br><br>
+Based on the rules of this cellular automaton, this tile will turn into a floor tile, because there are 4 wall tiles (4 red squares) surrounding it. Now, let’s code this neighbor counting function, we’ll call this function ``get_neighbor_count()`` and it will accept 3 arguments: `x` and `y` (which represents the tile’s position in our 2d list), and `map`.
 
-We’ll now iterate over the neighbors of this x and y position, to do this, we’ll need two loops, one that goes through the y position above and below the current tile, so `y+1` and `y-1` (Because we’re working with a 2d list y+1 represents the y position below the current tile, while y-1 represents the position above the current tile. This is because of array indexing), and one that goes through the item’s besides the tile (because of the way our loops are nested, we'll also be able to go through the item's diagonal to the current tile).
+We’ll now iterate over the neighbors of this x and y position, to do this, we’ll need two loops, one that goes through the y position above and below the current tile, so `y+1` and `y-1` (Because we’re working with a 2d list y+1 represents the y position below the current tile, while y-1 represents the position above the current tile. This is because of array indexing), and one that goes through the items besides the tile (because of the way our loops are nested, we'll also be able to go through the items diagonal to the current tile) : 
+```py
+# Remember, the max number in range() is exclusive.
+for i in range(y-1, y+2):
+  for j in range(x-1, x+2):
+    pass
+```
+
+First, we’re going to check whether the current xy position we’re on is in ``map``’s bounds. Because if we sent a position like (0, 0) to ``get_neighbor_count()``, ``y-1`` and ``x-1`` will return (-1, -1), which isn’t a valid position. So, we’re just going to consider positions like that to be wall tiles (so we’ll increment the count by 1 in an else-statement). To check for a valid position, we’ll just check whether ``x`` and ``y`` are positive numbers and whether they’re smaller than the width and height of the ``map`` list (“smaller than” because array indexing starts at 0) :
+```py
+if i >= 0 and i < height(map) and j >= 0 and j < width(map):
+  # Valid position
+  pass
+else:
+  # Out of bounds, consider it a wall tile.
+  count += 1
+```
+
+Then, inside the if-statement, we’re going to check whether the current xy position aren’t the same coordinates we sent to the ``get_neighbor_count()``, this can be accomplished using a simple if-statement:
+```py
+if i != y and j != x:
+  pass
+```
+
+The last thing to do is check whether the current xy position is a wall tile, if so, we can increment the neighbor count by 1:
+```py
+if map[i][j] == TILE_WALL:
+  count += 1
+```
+
+This would be the complete function for this:
+```py
+def get_neighbor_count(x: int, y: int, map: list):
+  count = 0
+
+  # Go up and down
+  for i in range(y-1, y+2):
+
+    # Go side to side
+    for j in range(x-1, x+2):
+
+      # Check for valid index
+      if i >= 0 and i < height(map) and j >= 0 and j < width(map):
+
+        # Check for wall tile
+        if map[i][j] == TILE_WALL:
+          count += 1
+      else:
+        # Out of bounds, consider it a wall tile.
+        count += 1
+
+  return count
+```
+</details>
+
+<details>
+ <summary>3. Use cellular automaton (Applying c.a to all tiles)</summary>
+
+All that’s left is applying the cellular automaton to the map. We can accomplish this using a ``apply_cellular_automaton()`` function that takes in a ``noise_map`` and ``iterations`` argument. ``iterations`` is the number of times we’re going to apply the cellular automaton to the map.
+
+First, we loop ``iterations`` amount of times (_We don't need to keep track of the number of iterations, so we'll just dump that value using ``_``_) : 
+```py
+ for _ in range(iterations):
+```
+
+Then, we’ll make a copy of the noise map and store it in a variable called ``temp_grid``, this is so then we don’t run the neighbor count checks on a modified grid but the original one :
+```py
+# copy.deepcopy() is one of the ways to copy a 2d list in python.
+temp_grid = copy.deepcopy(noise_map)
+```
+
+Then, we’ll make another xy for-loop chain to go through every tile and we’ll run the neighbor count check to decide whether that tile should become a wall or floor tile:
+```py
+# Go through every tile
+for y in range(height(noise_map)):
+  for x in range(width(noise_map)):
+    # Get current tile neighbor count
+    neighbor_count = get_neighbor_count(x, y, temp_grid)
+
+    # Neighbor count is bigger than 4, turn into wall tile
+    if neighbor_count > 4:
+      noise_map[y][x] = TILE_WALL
+    else:
+      # Neighbor count is bigger than 4, turn into floor tile
+      noise_map[y][x] = TILE_FLOOR
+```
+
+And that's basically it! This would be the complete function for this:
+```py
+def apply_cellular_automaton(noise_map: list, iterations: int):
+    # Iterate "iterations" amount of times
+    for _ in range(iterations):
+        temp_grid = copy.deepcopy(noise_map)
+
+        # Go through every tile
+        for y in range(height(noise_map)):
+            for x in range(width(noise_map)):
+                # Get current tile neighbor count
+                neighbour_count = get_neighbour_count(x, y, temp_grid)
+
+                if neighbour_count > 4:
+                    # Neighbor count is bigger than 4, turn into wall tile
+                    noise_map[y][x] = TILE_WALL
+                else:
+                    # Neighbor count is bigger than 4, turn into floor tile
+                    noise_map[y][x] = TILE_FLOOR
+        
+
+    return noise_map
+```
+</details>
 
 ## Installation
 Simply head over to the releases, download the `.zip` file, extract it, and run the `.exe` file.
