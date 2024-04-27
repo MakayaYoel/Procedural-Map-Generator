@@ -1,4 +1,4 @@
-# Procedural Map Generator | Cellular Automata
+# Procedural Map Generator
 This is a very simple implementation of map generation using a cellular automaton where a wall or floor tile is generated based on a tile's neighbor count.
 
 ## Preview
