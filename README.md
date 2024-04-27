@@ -7,7 +7,7 @@ This is a very simple implementation of map generation using a cellular automato
 ## How can I make this?
 Head over to the [Wiki](https://github.com/MakayaYoel/Procedural-Map-Generator/wiki/Tutorial) to learn how to make this.
 
-There are also videos that teach how to make something like this. I enjoyed learning how to make this from [White Box Dev](https://youtu.be/slTEz6555Ts?si=7ra4MYzphw1DvV6d) and [Sebastian Lague](https://youtu.be/v7yyZZjF1z4?si=ixkQ0VCxOtyW7cRQ).
+There are also videos that can teach you how to make something like this. I enjoyed learning how to make this from [White Box Dev](https://youtu.be/slTEz6555Ts?si=7ra4MYzphw1DvV6d) and [Sebastian Lague](https://youtu.be/v7yyZZjF1z4?si=ixkQ0VCxOtyW7cRQ).
 
 ## Installation
 Simply head over to the releases, download the `.zip` file, extract it, and run the `.exe` file.
