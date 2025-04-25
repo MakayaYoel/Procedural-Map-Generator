@@ -2,7 +2,9 @@
 This is a very simple implementation of map generation using a cellular automaton where a wall or floor tile is generated based on a tile's neighbor count.
 
 ## Preview
-![Preview](https://s9.gifyu.com/images/SZ87Z.gif)
+https://github.com/user-attachments/assets/ce9afca3-78d0-4548-889f-bbf85c9021f4
+
+
 
 ## How can I make this?
 Head over to the [Wiki](https://github.com/MakayaYoel/Procedural-Map-Generator/wiki/Tutorial) to learn how to make this.
